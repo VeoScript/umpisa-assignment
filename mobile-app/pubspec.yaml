@@ -1,0 +1,37 @@
+name: meal_planner_app
+description: Meal Planner mobile app (Flutter) — recipes, saved favorites, weekly meal plan.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- "TanStack Query for Flutter" ---
+  # fquery gives us useQuery / useMutation with automatic caching,
+  # refetching, and invalidation — same mental model as @tanstack/react-query.
+  fquery: ^3.1.0
+  fquery_core: ^3.1.0
+  flutter_hooks: ^0.21.2
+
+  # --- networking (raw GraphQL over http, no codegen needed) ---
+  http: ^1.2.2
+
+  # --- token storage ---
+  flutter_secure_storage: ^10.3.1
+
+  # --- fonts to match the web theme (Fraunces / Inter / IBM Plex Mono) ---
+  google_fonts: ^8.2.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
