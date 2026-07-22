@@ -2,9 +2,6 @@ import '../core/graphql_client.dart';
 import '../stores/auth_store.dart';
 import 'models.dart';
 
-/// Every function here is a plain `Future<T>` — that's all fquery needs as a
-/// `queryFn`/`mutationFn`. No special wrapper required, same as how you'd
-/// pass a plain fetch()/axios call to useQuery in TanStack Query.
 class Api {
   // ---------------- Auth ----------------
 

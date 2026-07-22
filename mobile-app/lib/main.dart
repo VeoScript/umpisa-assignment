@@ -14,7 +14,6 @@ final queryCache = QueryCache();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Restore any saved session (reads the JWT from secure storage).
   await AuthActions.bootstrap();
 
   runApp(const MealPlannerApp());
@@ -37,8 +36,6 @@ class MealPlannerApp extends StatelessWidget {
   }
 }
 
-/// Watches the zustand-like `authStore` and swaps between the login flow
-/// and the main app shell — no navigator/router setup needed for this.
 class AuthGate extends HookWidget {
   const AuthGate({super.key});
 

@@ -13,14 +13,10 @@ class LoginScreen extends HookWidget {
     final emailCtrl = useTextEditingController();
     final passCtrl = useTextEditingController();
 
-    // useMutation ~= TanStack's useMutation: gives you isPending/error/data
-    // and a .mutate() you call from a button handler.
     final login = useMutation<void, Exception, Map<String, String>, void>(
       (vars) => Api.login(email: vars['email']!, password: vars['password']!),
     );
 
-    // React to the mutation's error state, same idea as a `useEffect` on
-    // `mutation.error` in the TanStack version.
     useEffect(() {
       if (login.error != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {

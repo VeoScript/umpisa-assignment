@@ -12,7 +12,7 @@ class ProfileScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final statsQuery = useQuery(['stats'], Api.stats, context: context);
-    // Reading the logged-in user straight from the zustand-like auth store.
+
     final user = useStoreValue(authStore, (s) => s.user);
 
     return Scaffold(

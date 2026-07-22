@@ -18,7 +18,7 @@ class AuthState {
   const AuthState({this.token, this.user, this.isBootstrapping = true});
   final String? token;
   final AppUser? user;
-  final bool isBootstrapping; // true while reading token from disk on launch
+  final bool isBootstrapping;
 
   bool get isLoggedIn => token != null;
 
@@ -40,12 +40,9 @@ class AuthState {
 const _storage = FlutterSecureStorage();
 const _tokenKey = 'auth_token';
 
-/// Singleton store — this is the "create()" call in zustand terms.
-/// Import `authStore` anywhere you need to read or update auth state.
 final authStore = Store<AuthState>(const AuthState());
 
 class AuthActions {
-  /// Call once on app start (see main.dart) to restore a saved session.
   static Future<void> bootstrap() async {
     final token = await _storage.read(key: _tokenKey);
     authStore.set((s) => s.copyWith(token: token, isBootstrapping: false));

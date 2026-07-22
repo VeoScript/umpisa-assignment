@@ -19,8 +19,6 @@ class RecipeDetailScreen extends HookWidget {
       (isCurrentlySaved) =>
           isCurrentlySaved ? Api.unsaveRecipe(mealId) : Api.saveRecipe(mealId),
       onSuccess: (_, __, ___) {
-        // "invalidateQueries" ~= TanStack: mark related cache entries stale
-        // so every screen showing this data refetches automatically.
         queryCache.invalidateQueries(['meal', mealId]);
         queryCache.invalidateQueries(['savedRecipes']);
         queryCache.invalidateQueries(['meals']);

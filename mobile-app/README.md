@@ -1,90 +1,144 @@
-# Meal Planner — Flutter mobile app
+# Meal Planner Mobile App
 
-Boss, ito yung mobile app na kasunod ng `meal-planner-backend` mo (GraphQL/Hono/Prisma).
-Nasa ilalim ito yung buod kung paano ginawa yung 3 hiningi mo, tapos yung setup steps.
+Flutter mobile application for the Meal Planner platform. This client is designed to work with the `meal-planner-backend` GraphQL API and provides recipe browsing, meal planning, and authentication. The project follows a lightweight architecture inspired by modern React development patterns while remaining idiomatic to Flutter.
 
-## 1. Bakit ganito ginawa (mapping sa hiningi mo)
+## Architecture Overview
 
-| Hiningi mo | Sa web/React kadalasan | Dito sa Flutter | Nasaan sa code |
-|---|---|---|---|
-| Data fetching parang TanStack Query | `useQuery` / `useMutation` | package **[fquery](https://pub.dev/packages/fquery)** — halos parehong API mismo: `useQuery(['key'], queryFn)`, `useMutation(mutationFn)`, may caching, refetch, at `invalidateQueries` | `lib/screens/*.dart`, `lib/api/api.dart` |
-| State management parang Zustand | `create()` + `useStore(selector)` | wala pang tunay na "Zustand para sa Flutter" na package na mapagkakatiwalaan, kaya gumawa ako ng **maliit na `Store<T>` class** (~30 lines, nasa `lib/core/store.dart`) na parehong pattern: gumawa ka ng isang singleton store, tapos `useStoreValue(store, selector)` sa loob ng widget para mag-subscribe | `lib/core/store.dart`, `lib/stores/auth_store.dart` |
-| Push notifications | — | `firebase_messaging` (yung tumatanggap ng push) + `flutter_local_notifications` (yung nagpapakita ng banner kahit bukas yung app) | `lib/notifications/push_notifications.dart` |
+The application adopts patterns similar to those commonly used in React applications while leveraging Flutter's ecosystem.
 
-Yung **theme** mo (`cream`, `saffron`, `plum`, `sage`, etc + Fraunces/Inter/IBM Plex Mono fonts) — direkta kong nilagay sa `lib/theme/app_theme.dart`, parehong pangalan ng colors para madali i-match sa web.
+| Requirement      | React Equivalent                           | Flutter Implementation                                                                                                  | Location                                            |
+| ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Data fetching    | TanStack Query (`useQuery`, `useMutation`) | [`fquery`](https://pub.dev/packages/fquery) with query caching, automatic refetching, mutations, and cache invalidation | `lib/screens/`, `lib/api/api.dart`                  |
+| State management | Zustand                                    | Lightweight custom `Store<T>` implementation following a Zustand-like pattern with selectors and subscriptions          | `lib/core/store.dart`, `lib/stores/auth_store.dart` |
 
-## 2. Paano gumagana yung data flow (buod)
+The application's visual theme—including the **cream**, **saffron**, **plum**, and **sage** color palette, along with the **Fraunces**, **Inter**, and **IBM Plex Mono** fonts—is implemented in `lib/theme/app_theme.dart` using the same naming convention as the web application to ensure design consistency across platforms.
 
-1. `lib/core/graphql_client.dart` — simpleng function na nagpapadala ng GraphQL query/mutation papunta sa backend mo (`POST /graphql`), automatic nilalagay yung `Authorization: Bearer <token>` kung naka-login.
-2. `lib/api/api.dart` — dito nakalagay lahat ng query/mutation strings (register, login, searchMeals, saveRecipe, setMealPlanEntry, etc) bilang plain `Future` functions — ito mismo yung ipapasa mo sa `useQuery`/`useMutation`.
-3. Sa mga screens (`lib/screens/`), ginagamit na lang yung mga function na iyon:
+## Application Flow
+
+The client communicates exclusively with the GraphQL backend.
+
+1. **GraphQL Client**
+
+   `lib/core/graphql_client.dart` contains a lightweight GraphQL client responsible for sending all requests to `POST /graphql`. When a user is authenticated, the client automatically includes the JWT access token in the `Authorization` header.
+
+2. **API Layer**
+
+   `lib/api/api.dart` contains all GraphQL queries and mutations exposed as simple asynchronous Dart functions, including authentication, recipe search, saved recipes, meal planning, and user statistics.
+
+3. **Data Fetching**
+
+   Screens consume the API using `fquery`.
+
    ```dart
-   final mealsQuery = useQuery(['meals', 'search', term], () => Api.searchMeals(term));
-   ```
-   Kapag pareho yung `queryKey`, kinukuha na lang sa cache — hindi na ulit magre-request sa server, katulad mismo ng TanStack Query.
-4. Pagkatapos ng save/unsave o pag-assign ng meal plan, tinatawag yung `queryClient.invalidateQueries([...])` para mag-refresh yung mga related na screens.
-
-## 3. Auth + push token
-
-- Yung JWT galing sa `login`/`register` ay sinesave sa `flutter_secure_storage` (encrypted), tapos ni-restore ulit tuwing bubukas yung app (`AuthActions.bootstrap()` sa `main.dart`).
-- **Note sa backend mo**: wala pang `registerPushToken` mutation sa schema mo ngayon, kaya kinuha ko na lang yung FCM token sa app (`PushNotificationService.instance.fcmToken`) pero hindi pa naise-send kahit saan. Kailangan mo idagdag sa backend:
-  ```graphql
-  registerPushToken(token: String!): Boolean!
-  ```
-  tapos i-save sa isang bagong table (`userId` → `fcmToken`), para may pagpapadalahan ka ng push (halimbawa: "Oy, i-plan mo na yung dinner mo bukas").
-
-## 4. Setup steps
-
-Wala akong Flutter SDK dito sa sandbox ko para i-run yung `flutter create`, kaya ito yung mga steps mo:
-
-1. **Gawing tunay na Flutter project** (para makuha yung android/ios native folders):
-   ```bash
-   flutter create --org com.yourcompany --project-name meal_planner_app .
-   ```
-   Piliin "overwrite existing files" kung tatanungin — ligtas naman, hindi nito babaguhin yung laman ng `lib/`.
-
-2. **Install dependencies:**
-   ```bash
-   flutter pub get
+   final mealsQuery = useQuery(
+     ['meals', 'search', term],
+     () => Api.searchMeals(term),
+   );
    ```
 
-3. **I-configure yung GraphQL endpoint** papunta sa backend mo. Default `http://10.0.2.2:4000/graphql` (para sa Android emulator). Pwede mo i-override:
-   ```bash
-   flutter run --dart-define=GRAPHQL_ENDPOINT=http://192.168.1.20:4000/graphql
+   Queries sharing the same cache key reuse cached data whenever possible, minimizing unnecessary network requests. Mutations invalidate related queries to ensure cached data remains synchronized with the backend.
+
+4. **Cache Management**
+
+   After successful mutations such as saving recipes, removing favorites, or updating meal plan entries, the application refreshes affected data using:
+
+   ```dart
+   queryClient.invalidateQueries([...]);
    ```
 
-4. **Firebase para sa push notifications:**
-   ```bash
-   dart pub global activate flutterfire_cli
-   flutterfire configure
-   ```
-   Gagawa ito ng `firebase_options.dart` at ii-download yung `google-services.json` (Android) / `GoogleService-Info.plist` (iOS) papunta sa tamang folder. Pagkatapos, i-update mo lang yung `Firebase.initializeApp()` sa `main.dart` para gamitin yung `DefaultFirebaseOptions.currentPlatform`.
+## Authentication
 
-5. Run:
-   ```bash
-   flutter run
-   ```
+Authentication is handled using JWT access tokens returned by the backend's `login` and `register` mutations.
 
-## 5. Project structure
+The token is securely stored using `flutter_secure_storage` and automatically restored when the application launches through `AuthActions.bootstrap()` in `main.dart`. Once restored, all subsequent GraphQL requests are authenticated automatically.
+
+## Getting Started
+
+Since Flutter tooling is not available within the development environment used to generate this project, the native Android and iOS project files must be created locally.
+
+### 1. Create the Flutter project
+
+```bash
+flutter create \
+  --org com.yourcompany \
+  --project-name meal_planner_app .
+```
+
+If prompted to overwrite existing files, it is safe to proceed. The contents of the `lib/` directory will be preserved.
+
+### 2. Install dependencies
+
+```bash
+flutter pub get
+```
+
+### 3. Configure the GraphQL endpoint
+
+The default endpoint targets the Android emulator:
+
+```
+http://10.0.2.2:4000/graphql
+```
+
+To connect to another backend instance, specify a custom endpoint when running the application:
+
+```bash
+flutter run \
+  --dart-define=GRAPHQL_ENDPOINT=http://192.168.1.20:4000/graphql
+```
+
+### 4. Configure Firebase
+
+Install FlutterFire CLI:
+
+```bash
+dart pub global activate flutterfire_cli
+```
+
+Configure Firebase:
+
+```bash
+flutterfire configure
+```
+
+This generates `firebase_options.dart` and downloads the required platform-specific configuration files (`google-services.json` for Android and `GoogleService-Info.plist` for iOS).
+
+After configuration, initialize Firebase in `main.dart` using:
+
+```dart
+DefaultFirebaseOptions.currentPlatform
+```
+
+### 5. Run the application
+
+```bash
+flutter run
+```
+
+## Project Structure
 
 ```
 lib/
-  main.dart                     # app entrypoint, fquery CacheProvider, AuthGate
-  theme/app_theme.dart          # colors + fonts galing sa @theme mo
-  core/
-    store.dart                  # yung "zustand-like" Store<T> + useStoreValue hook
-    graphql_client.dart         # POST /graphql wrapper
-  stores/auth_store.dart        # session state (token, user) — zustand-like store
-  api/
-    models.dart                 # Meal, SavedRecipe, MealPlanEntry, Stats
-    api.dart                    # lahat ng query/mutation functions
-  notifications/push_notifications.dart
-  screens/                      # login, register, home (search), recipe detail,
-                                 # saved, weekly meal plan, profile/stats
-  widgets/recipe_card.dart
+├── main.dart                      # Application entry point
+├── theme/
+│   └── app_theme.dart             # Application colors and typography
+├── core/
+│   ├── graphql_client.dart        # GraphQL HTTP client
+│   └── store.dart                 # Zustand-inspired Store<T>
+├── stores/
+│   └── auth_store.dart            # Authentication state
+├── api/
+│   ├── api.dart                   # GraphQL queries and mutations
+│   └── models.dart                # Data models
+├── screens/                       # Authentication, home, recipes,
+│                                  # saved recipes, meal planner,
+│                                  # profile, and statistics
+└── widgets/
+    └── recipe_card.dart
 ```
 
-## 6. Alam kong hindi pa 100% "just run it"
+## Notes
 
-- Hindi ko na-test na mag-compile dahil walang Flutter SDK sa environment ko — pero sinunod ko yung totoong fquery API (`useQuery`, `useMutation`, `CacheProvider`, `useQueryClient().invalidateQueries`), kaya dapat konting tweak na lang kung may lumabas na version mismatch.
-- Kung gusto mo, pwede kong tignan/idebug kapag na-run mo na at may error na lumabas — send mo lang yung error message.
+- The application has not been compiled or tested in the current environment because the Flutter SDK is unavailable.
+- The implementation follows the official `fquery` API (`useQuery`, `useMutation`, `CacheProvider`, and `invalidateQueries`) and is expected to require minimal adjustments if package versions differ.
+- If build or runtime issues arise after local setup, they can typically be resolved with minor dependency or configuration updates.

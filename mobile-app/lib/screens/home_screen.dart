@@ -12,12 +12,8 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final searchCtrl = useTextEditingController();
-    // debounce-ish: only the committed search term drives the query key
     final searchTerm = useState('chicken');
 
-    // useQuery ~= TanStack's useQuery: pass a queryKey (like a cache key /
-    // dependency array in one) and a queryFn. fquery caches by key, so
-    // switching back to a term you already searched is instant.
     final mealsQuery = useQuery([
       'meals',
       'search',
