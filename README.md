@@ -1,10 +1,25 @@
 # Meal Planner Application
 
-A full-stack meal planning application that allows users to discover recipes, save their favorite meals, organize weekly meal plans, and track their meal planning statistics. The application uses TheMealDB as its recipe source while managing user data, saved recipes, and meal plans through a custom GraphQL backend.
+A full-stack meal planning platform that enables users to discover recipes, save their favorite meals, organize weekly meal plans, and monitor meal planning statistics. Recipe data is sourced from **TheMealDB**, while user accounts, saved recipes, meal plans, and authentication are managed through a custom GraphQL backend.
+
+The project consists of three main components:
+
+- **Web Frontend** — Built with Next.js and React
+- **Mobile Application** — Built with Flutter
+- **GraphQL Backend** — Built with Hono, GraphQL Yoga, and Prisma
+
+## Project Structure
+
+```
+.
+├── backend/      # GraphQL API
+├── frontend/     # Next.js web application
+└── mobile-app/   # Flutter mobile application
+```
 
 ## Tech Stack
 
-### Frontend
+### Web Frontend
 
 - Next.js 16
 - React
@@ -14,9 +29,24 @@ A full-stack meal planning application that allows users to discover recipes, sa
 - Axios
 - GraphQL
 
-For the complete frontend documentation, see:
+For complete documentation, see:
 
 - 📄 [Frontend README](./frontend/README.md)
+
+---
+
+### Mobile Application
+
+- Flutter
+- Dart
+- GraphQL
+- fquery (TanStack Query-inspired data fetching)
+- Custom Zustand-inspired `Store<T>` state management
+- flutter_secure_storage
+
+For complete documentation, see:
+
+- 📄 [Mobile App README](./mobile-app/README.md)
 
 ---
 
@@ -33,6 +63,6 @@ For the complete frontend documentation, see:
 - Vitest
 - Docker & Docker Compose
 
-For the complete backend documentation, see:
+For complete documentation, see:
 
 - 📄 [Backend README](./backend/README.md)
