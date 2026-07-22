@@ -1,0 +1,40 @@
+{
+  "name": "meal-planner-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "docker:up": "docker compose up --build",
+    "docker:up:detached": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:down:clean": "docker compose down -v",
+    "docker:logs": "docker compose logs -f api"
+  },
+  "dependencies": {
+    "@graphql-tools/schema": "^10.0.7",
+    "@hono/node-server": "^1.13.7",
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "graphql": "^16.9.0",
+    "graphql-yoga": "^5.10.4",
+    "hono": "^4.6.11",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.9.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  passwordHash  String
+  name          String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  savedRecipes  SavedRecipe[]
+  mealPlanEntries MealPlanEntry[]
+
+  @@map("users")
+}
+
+model SavedRecipe {
+  id          String   @id @default(uuid())
+  userId      String
+  mealId      String   // id from TheMealDB
+  mealName    String
+  thumbnail   String?
+  category    String?
+  area        String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mealId])
+  @@index([userId])
+  @@map("saved_recipes")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model MealPlanEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  date        DateTime // stored as date (midnight UTC) representing the calendar day
+  mealType    MealType
+  mealId      String   // id from TheMealDB
+  mealName    String
+  thumbnail   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, mealType])
+  @@index([userId, date])
+  @@map("meal_plan_entries")
+}
