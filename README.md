@@ -66,3 +66,11 @@ For complete documentation, see:
 For complete documentation, see:
 
 - 📄 [Backend README](./backend/README.md)
+
+---
+
+### Deployment
+
+- Render (for Backend) - https://umpisa-assignment.onrender.com/graphql
+- Vercel (for Frontend) - https://umpisa-assignment.vercel.app/
+- Flutter Android APK - **Install here ->** [meal-planner-1.0.0](https://github.com/VeoScript/umpisa-assignment/releases/download/1.0.0/meal-planner-1.0.0.apk)
